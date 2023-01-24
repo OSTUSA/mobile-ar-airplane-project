@@ -7,6 +7,7 @@
 
 import SwiftUI
 import RealityKit
+import ARKit
 
 struct ContentView : View {
     var body: some View {
@@ -16,10 +17,34 @@ struct ContentView : View {
 
 struct ARViewContainer: UIViewRepresentable {
     
+    
     func makeUIView(context: Context) -> ARView {
         
+        //MARK: Set-up Session
         let arView = ARView(frame: .zero)
+        let placementConfiguration = ARWorldTrackingConfiguration()
+        let session = arView.session
         
+        //Add the configuration for the world's plane detenction
+        placementConfiguration.planeDetection = [.vertical, .horizontal]
+        placementConfiguration.environmentTexturing = .automatic
+        
+        //Begin the session
+        session.run(placementConfiguration)
+        
+        // Add Coaching Overlay (Debug)
+        let coachingOverlay = ARCoachingOverlayView()
+        coachingOverlay.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        coachingOverlay.session = session
+        coachingOverlay.goal = .verticalPlane
+        arView.addSubview(coachingOverlay)
+        
+        //MARK: Set Debug Options
+        #if DEBUG
+        arView.debugOptions = [.showFeaturePoints, .showAnchorGeometry]
+        #endif
+        
+        //MARK: Adding Model
         // Load the "Box" scene from the "Experience" Reality File
         let boxAnchor = try! Experience.loadBox()
         
